@@ -59,7 +59,7 @@ def is_binary(string: str) -> bool:
     Returns:
         ``True`` if the given string is a binary operator, ``False`` otherwise.
     """
-    return string == '&' or string == '|' or string == '->'
+    return string in {'&', '|', '->', '+', '<->', '-&', '-|'}
     # For Chapter 3:
     # return string in {'&', '|',  '->', '+', '<->', '-&', '-|'}
 
@@ -359,6 +359,22 @@ class Formula:
         """
         for variable in substitution_map:
             assert is_variable(variable)
+            
+        if is_variable(self.root):
+            return substitution_map.get(self.root, self)
+        
+        elif is_constant(self.root):
+            return self
+        
+        elif is_unary(self.root):
+            substituted_first = self.first.substitute_variables(substitution_map)
+            return Formula('~', substituted_first)
+        
+        elif is_binary(self.root):
+            substitute_first = self.first.substitute_variables(substitution_map)
+            substitute_second = self.second.substitute_variables(substitution_map)
+            return Formula(self.root, substitute_first,substitute_second)
+
         # Task 3.3
 
     def substitute_operators(self, substitution_map: Mapping[str, Formula]) -> \
@@ -389,4 +405,30 @@ class Formula:
             assert is_constant(operator) or is_unary(operator) or \
                    is_binary(operator)
             assert substitution_map[operator].variables().issubset({'p', 'q'})
+
+        if is_variable(self.root):
+            return self
+
+        elif is_constant(self.root):
+            return substitution_map.get(self.root, self)
+
+        elif is_unary(self.root):
+            substituted_first = self.first.substitute_operators(substitution_map)
+
+            if self.root in substitution_map:
+                template = substitution_map[self.root]
+                return template.substitute_variables({'p': substituted_first})
+
+            return Formula(self.root, substituted_first)
+
+        elif is_binary(self.root):
+            substituted_first = self.first.substitute_operators(substitution_map)
+            substituted_second = self.second.substitute_operators(substitution_map)
+
+            if self.root in substitution_map:
+                template = substitution_map[self.root]
+                return template.substitute_variables(
+                    {'p': substituted_first, 'q': substituted_second})
+
+            return Formula(self.root, substituted_first, substituted_second)
         # Task 3.4
