@@ -420,7 +420,7 @@ class Formula:
                 return template.substitute_variables({'p': substituted_first})
 
             return Formula(self.root, substituted_first)
-
+        #5
         elif is_binary(self.root):
             substituted_first = self.first.substitute_operators(substitution_map)
             substituted_second = self.second.substitute_operators(substitution_map)
