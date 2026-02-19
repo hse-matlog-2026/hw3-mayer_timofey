@@ -45,6 +45,8 @@ def to_not_and(formula: Formula) -> Formula:
         A formula that has the same truth table as the given formula, but
         contains no constants or operators beyond ``'~'`` and ``'&'``.
     """
+    form = to_not_and_or(formula) 
+    return form.substitute_operators({'|': Formula.parse('~(~p&~q)')})
     # Task 3.6a
 
 def to_nand(formula: Formula) -> Formula:
@@ -58,6 +60,15 @@ def to_nand(formula: Formula) -> Formula:
         A formula that has the same truth table as the given formula, but
         contains no constants or operators beyond ``'-&'``.
     """
+    form = to_not_and_or(formula)
+
+    substitution_map = {
+        '~': Formula.parse('(p-&p)'),
+        '&': Formula.parse('((p-&q)-&(p-&q))'),
+        '|': Formula.parse('((p-&p)-&(q-&q))')
+    }
+    
+    return form.substitute_operators(substitution_map)
     # Task 3.6b
 
 def to_implies_not(formula: Formula) -> Formula:
@@ -72,6 +83,26 @@ def to_implies_not(formula: Formula) -> Formula:
         contains no constants or operators beyond ``'->'`` and ``'~'``.
     """
     # Task 3.6c
+    
+    form = to_not_and_or(formula)
+    
+    p = Formula('p')
+    q = Formula('q')
+    
+    not_q = Formula('~', q)
+    implies_p_not_q = Formula('->', p, not_q)
+    not_implies = Formula('~', implies_p_not_q)
+    
+    not_p = Formula('~', p)
+    implies_not_p_q = Formula('->', not_p, q)
+    
+    substitution_map = {
+        '&': not_implies,
+        '|': implies_not_p_q
+    }
+    
+    return form.substitute_operators(substitution_map)
+    # Task 3.6c
 
 def to_implies_false(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
@@ -84,4 +115,15 @@ def to_implies_false(formula: Formula) -> Formula:
         A formula that has the same truth table as the given formula, but
         contains no constants or operators beyond ``'->'`` and ``'F'``.
     """
+    form = to_implies_not(formula)
+
+    p = Formula('p')
+    f = Formula('F')  
+    implies_p_f = Formula('->', p, f)
+    
+    substitution_map = {
+        '~': implies_p_f
+    }
+    
+    return form.substitute_operators(substitution_map)
     # Task 3.6d
